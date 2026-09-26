@@ -16,22 +16,24 @@ repos:
         args: ["--fix"]
       - id: ruff-format
 
-  # Keep requirements/*.txt in sync with their .in. pip-tools is provisioned into
-  # pre-commit's own managed virtualenv, so contributors need not have it on PATH.
-  - repo: local
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
     hooks:
-      - id: pip-compile-base
-        name: pip-compile (base.in -> base.txt)
-        entry: pip-compile --quiet --output-file=requirements/base.txt requirements/base.in
-        language: python
-        additional_dependencies: ["pip-tools==7.6.1"]
-        files: ^(requirements/base\.in|pyproject\.toml)$
-        pass_filenames: false
+      - id: pydocstyle
+        name: pydocstyle (docstring style)
+        files: ^hookrunner/.*\.py$
 
-      - id: pip-compile-dev
-        name: pip-compile (dev.in -> dev.txt)
-        entry: pip-compile --quiet --output-file=requirements/dev.txt requirements/dev.in
-        language: python
-        additional_dependencies: ["pip-tools==7.6.1"]
-        files: ^(requirements/(base|dev)\.in|pyproject\.toml)$
-        pass_filenames: false
+  - repo: https://github.com/terrencepreilly/darglint
+    rev: v1.8.1
+    hooks:
+      - id: darglint
+        name: darglint (docstring completeness)
+        args: ["-v", "2"]
+        files: ^hookrunner/.*\.py$
+
+# NOTE: requirements/*.txt sync is NOT a local pre-commit hook. pip-compile
+# embeds the running interpreter version in the file header and re-resolves on
+# each run, so a local hook (system Python) churns the header vs the canonical
+# 3.12-compiled lockfiles and blocks commits. The CI `deps-drift` job is the
+# real gate (compares pin lines only, interpreter-agnostic). Run `make compile`
+# after editing requirements/*.in or pyproject deps.

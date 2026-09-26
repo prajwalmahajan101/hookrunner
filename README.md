@@ -1,5 +1,9 @@
 # hookrunner
 
+[![CI](https://github.com/prajwalmahajan101/hookrunner/actions/workflows/ci.yml/badge.svg)](https://github.com/prajwalmahajan101/hookrunner/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 Local HMAC-signed webhook receiver + replay tool for backend dev.
 
 Capture signed webhooks (Stripe, GitHub, generic HMAC, custom) to SQLite, inspect

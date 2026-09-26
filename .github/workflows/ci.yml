@@ -76,12 +76,16 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install pip-tools==7.6.1
-      # Recompile into throwaway files and diff the version-pin lines against
-      # the committed lockfiles. Drift = a forgotten `make compile`.
+      # Compile INTO a copy of the committed lockfile so pip-compile honours the
+      # existing pins instead of re-resolving to whatever is newest on PyPI at
+      # run time — drift then means a real change in the .in/pyproject, not the
+      # passage of time. Only the `pkg==ver` pin lines are compared; the header
+      # and `# via` provenance comments are noise.
       - name: Check base.txt + dev.txt are in sync
         run: |
           set -e
           for layer in base dev; do
+            cp "requirements/$layer.txt" "/tmp/$layer.txt"
             pip-compile --quiet --output-file="/tmp/$layer.txt" "requirements/$layer.in"
             diff <(grep -E '^[a-zA-Z0-9]' "requirements/$layer.txt" | sort) \
                  <(grep -E '^[a-zA-Z0-9]' "/tmp/$layer.txt" | sort) \

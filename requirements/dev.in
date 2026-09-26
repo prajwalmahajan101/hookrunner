@@ -14,6 +14,10 @@ pre-commit
 # Linting / formatting
 ruff
 
+# Docstrings
+pydocstyle
+darglint
+
 # Type checking
 mypy
 

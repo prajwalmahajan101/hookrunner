@@ -22,6 +22,8 @@ click==8.5.0
     # via pip-tools
 coverage[toml]==7.16.1
     # via pytest-cov
+darglint==1.8.1
+    # via -r requirements/dev.in
 distlib==0.4.3
     # via virtualenv
 filelock==4.0.3
@@ -71,6 +73,8 @@ pluggy==1.6.0
     #   pytest-cov
 pre-commit==4.6.2
     # via -r requirements/dev.in
+pydocstyle==6.3.0
+    # via -r requirements/dev.in
 pygments==2.21.0
     # via
     #   pytest
@@ -97,6 +101,8 @@ ruff==0.16.9
     # via -r requirements/dev.in
 shellingham==1.5.4
     # via typer
+snowballstemmer==3.1.1
+    # via pydocstyle
 typer==0.27.2
     # via -r requirements/base.in
 typing-extensions==4.16.0

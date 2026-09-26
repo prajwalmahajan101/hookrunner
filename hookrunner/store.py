@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
@@ -62,10 +63,16 @@ class Store:
         Args:
             path: Path to the SQLite database file.
         """
-        self._conn = sqlite3.connect(str(path))
+        # The receiver's ThreadingHTTPServer touches the store from per-request
+        # threads, so the connection must not be pinned to its creating thread.
+        # ponytail: one shared connection + a lock; move to a per-thread
+        # connection pool only if capture throughput ever demands it.
+        self._conn = sqlite3.connect(str(path), check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
-        self._conn.execute(_SCHEMA)
-        self._conn.commit()
+        self._lock = threading.Lock()
+        with self._lock:
+            self._conn.execute(_SCHEMA)
+            self._conn.commit()
 
     def close(self) -> None:
         """Close the database connection."""
@@ -123,23 +130,24 @@ class Store:
         Returns:
             The autoincrement id of the inserted row.
         """
-        cur = self._conn.execute(
-            "INSERT INTO hooks (received_at, remote_addr, method, path, headers, "
-            "body, scheme, verified, verify_error) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                received_at,
-                remote_addr,
-                method,
-                path,
-                json.dumps(headers),
-                body,
-                scheme,
-                None if verified is None else int(verified),
-                verify_error,
-            ),
-        )
-        self._conn.commit()
-        return int(cur.lastrowid or 0)
+        with self._lock:
+            cur = self._conn.execute(
+                "INSERT INTO hooks (received_at, remote_addr, method, path, headers, "
+                "body, scheme, verified, verify_error) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    received_at,
+                    remote_addr,
+                    method,
+                    path,
+                    json.dumps(headers),
+                    body,
+                    scheme,
+                    None if verified is None else int(verified),
+                    verify_error,
+                ),
+            )
+            self._conn.commit()
+            return int(cur.lastrowid or 0)
 
     def get(self, hook_id: int) -> Hook | None:
         """Fetch a single captured webhook by id.
@@ -150,7 +158,8 @@ class Store:
         Returns:
             The matching Hook, or None if no row has that id.
         """
-        row = self._conn.execute("SELECT * FROM hooks WHERE id = ?", (hook_id,)).fetchone()
+        with self._lock:
+            row = self._conn.execute("SELECT * FROM hooks WHERE id = ?", (hook_id,)).fetchone()
         return None if row is None else self._row_to_hook(row)
 
     def list_hooks(self) -> list[Hook]:
@@ -159,7 +168,8 @@ class Store:
         Returns:
             The list of Hook records ordered by descending id.
         """
-        rows = self._conn.execute("SELECT * FROM hooks ORDER BY id DESC").fetchall()
+        with self._lock:
+            rows = self._conn.execute("SELECT * FROM hooks ORDER BY id DESC").fetchall()
         return [self._row_to_hook(row) for row in rows]
 
     @staticmethod

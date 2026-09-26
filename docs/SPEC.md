@@ -67,6 +67,7 @@ Each scheme implements two functions:
 def verify(cfg: SchemeConfig, headers: dict, body: bytes) -> None:
     """Raise VerifyError with a reason on failure; return on success."""
 
+
 def sign(cfg: SchemeConfig, body: bytes, timestamp: int) -> dict:
     """Return the header(s) to set on a replayed request."""
 ```

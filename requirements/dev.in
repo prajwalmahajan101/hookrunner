@@ -1,0 +1,22 @@
+# Development dependencies. Superset of base — installing dev installs everything.
+#
+# Edit this file, then regenerate the lockfile:
+#     pip-compile requirements/dev.in
+
+-r base.in
+
+# Dependency management
+pip-tools
+
+# Pre-commit framework
+pre-commit
+
+# Linting / formatting
+ruff
+
+# Type checking
+mypy
+
+# Tests
+pytest
+pytest-cov

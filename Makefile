@@ -1,6 +1,6 @@
 # hookrunner — dev convenience targets.
 
-.PHONY: help venv install compile sync hooks lint fmt test cov clean
+.PHONY: help venv install compile sync hooks lint fmt docstrings test cov clean
 
 VENV := .venv
 PY := $(VENV)/bin/python
@@ -31,6 +31,10 @@ lint:  ## Ruff lint
 
 fmt:  ## Ruff format
 	$(VENV)/bin/ruff format .
+
+docstrings:  ## Check docstrings (pydocstyle + darglint)
+	$(VENV)/bin/pydocstyle hookrunner
+	$(VENV)/bin/darglint -v 2 hookrunner
 
 test:  ## Run tests
 	$(PY) -m pytest

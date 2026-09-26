@@ -94,6 +94,53 @@ class Store:
         """
         self.close()
 
+    def insert(
+        self,
+        *,
+        received_at: str,
+        remote_addr: str,
+        method: str,
+        path: str,
+        headers: dict[str, str],
+        body: bytes,
+        scheme: str | None,
+        verified: bool | None,
+        verify_error: str | None,
+    ) -> int:
+        """Persist a captured webhook and return its id.
+
+        Args:
+            received_at: ISO-8601 UTC capture time.
+            remote_addr: Caller IP address.
+            method: HTTP method.
+            path: Request path.
+            headers: Request headers (stored as JSON).
+            body: Raw request body bytes (stored byte-exact as a BLOB).
+            scheme: Detected scheme name, or None.
+            verified: Verification result, or None if no scheme.
+            verify_error: Failure reason, or None.
+
+        Returns:
+            The autoincrement id of the inserted row.
+        """
+        cur = self._conn.execute(
+            "INSERT INTO hooks (received_at, remote_addr, method, path, headers, "
+            "body, scheme, verified, verify_error) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                received_at,
+                remote_addr,
+                method,
+                path,
+                json.dumps(headers),
+                body,
+                scheme,
+                None if verified is None else int(verified),
+                verify_error,
+            ),
+        )
+        self._conn.commit()
+        return int(cur.lastrowid or 0)
+
     @staticmethod
     def _row_to_hook(row: sqlite3.Row) -> Hook:
         """Map a database row to a Hook.

@@ -85,3 +85,21 @@ def test_custom_defaults(tmp_path):
     assert p.encoding == "hex"
     assert p.signed_payload == "{body}"
     assert p.prefix == ""
+    assert p.timestamp_header is None
+    assert p.nonce_header is None
+
+
+def test_custom_timestamp_requires_header(tmp_path):
+    toml = '[custom.p]\nheader = "X"\nsecret = "s"\nsigned_payload = "{timestamp}.{body}"\n'
+    with pytest.raises(ConfigError, match="no 'timestamp_header'"):
+        load_config(_write(tmp_path, toml))
+
+
+def test_custom_nonce_requires_header(tmp_path):
+    toml = '[custom.p]\nheader = "X"\nsecret = "s"\nsigned_payload = "{nonce}.{body}"\n'
+    with pytest.raises(ConfigError, match="no 'nonce_header'"):
+        load_config(_write(tmp_path, toml))
+
+
+def test_example_partnerx_has_timestamp_header():
+    assert load_config(EXAMPLE)["partnerx"].timestamp_header == "X-Partner-Timestamp"

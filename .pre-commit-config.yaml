@@ -1,0 +1,37 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-toml
+      - id: check-yaml
+      - id: check-added-large-files
+
+  # Keep this rev in lockstep with the pinned ``ruff`` in requirements/dev.txt.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+      - id: ruff-format
+
+  # Keep requirements/*.txt in sync with their .in. pip-tools is provisioned into
+  # pre-commit's own managed virtualenv, so contributors need not have it on PATH.
+  - repo: local
+    hooks:
+      - id: pip-compile-base
+        name: pip-compile (base.in -> base.txt)
+        entry: pip-compile --quiet --output-file=requirements/base.txt requirements/base.in
+        language: python
+        additional_dependencies: ["pip-tools==7.6.1"]
+        files: ^(requirements/base\.in|pyproject\.toml)$
+        pass_filenames: false
+
+      - id: pip-compile-dev
+        name: pip-compile (dev.in -> dev.txt)
+        entry: pip-compile --quiet --output-file=requirements/dev.txt requirements/dev.in
+        language: python
+        additional_dependencies: ["pip-tools==7.6.1"]
+        files: ^(requirements/(base|dev)\.in|pyproject\.toml)$
+        pass_filenames: false

@@ -33,6 +33,8 @@ dev = [
     "pre-commit",
     "ruff",
     "mypy",
+    "pydocstyle",
+    "darglint",
     "pytest",
     "pytest-cov",
 ]
@@ -52,6 +54,16 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pydocstyle]
+convention = "google"
+# Package/module-level __init__ docstrings not required; the package docstring
+# lives in hookrunner/__init__.py.
+add-ignore = "D104"
+
+[tool.darglint]
+docstring_style = "google"
+strictness = "full"
 
 [tool.mypy]
 python_version = "3.11"

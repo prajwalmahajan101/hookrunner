@@ -41,6 +41,7 @@ Individual targets: `make venv`, `make compile`, `make sync`, `make hooks`.
 ```sh
 make lint        # ruff check .
 make fmt         # ruff format .
+make docstrings  # pydocstyle + darglint (google convention) on hookrunner/
 make test        # pytest
 make cov         # pytest with coverage
 make compile     # regenerate requirements/*.txt after editing *.in or pyproject deps

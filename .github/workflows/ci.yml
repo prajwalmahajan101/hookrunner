@@ -48,6 +48,19 @@ jobs:
       - run: pip install -e ".[dev]"
       - run: mypy hookrunner
 
+  docstrings:
+    name: docstrings (pydocstyle + darglint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: pydocstyle hookrunner
+      - run: darglint -v 2 hookrunner
+
   test:
     name: tests py${{ matrix.python }}
     runs-on: ubuntu-latest

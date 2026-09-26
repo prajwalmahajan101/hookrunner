@@ -141,6 +141,27 @@ class Store:
         self._conn.commit()
         return int(cur.lastrowid or 0)
 
+    def get(self, hook_id: int) -> Hook | None:
+        """Fetch a single captured webhook by id.
+
+        Args:
+            hook_id: The row id to fetch.
+
+        Returns:
+            The matching Hook, or None if no row has that id.
+        """
+        row = self._conn.execute("SELECT * FROM hooks WHERE id = ?", (hook_id,)).fetchone()
+        return None if row is None else self._row_to_hook(row)
+
+    def list_hooks(self) -> list[Hook]:
+        """Return all captured webhooks, most recent first.
+
+        Returns:
+            The list of Hook records ordered by descending id.
+        """
+        rows = self._conn.execute("SELECT * FROM hooks ORDER BY id DESC").fetchall()
+        return [self._row_to_hook(row) for row in rows]
+
     @staticmethod
     def _row_to_hook(row: sqlite3.Row) -> Hook:
         """Map a database row to a Hook.

@@ -34,7 +34,7 @@ fmt:  ## Ruff format
 
 docstrings:  ## Check docstrings (pydocstyle + darglint)
 	$(VENV)/bin/pydocstyle hookrunner
-	$(VENV)/bin/darglint -v 2 hookrunner
+	git ls-files 'hookrunner/*.py' | xargs $(VENV)/bin/darglint -v 2
 
 test:  ## Run tests
 	$(PY) -m pytest

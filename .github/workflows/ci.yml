@@ -59,7 +59,8 @@ jobs:
           cache: pip
       - run: pip install -e ".[dev]"
       - run: pydocstyle hookrunner
-      - run: darglint -v 2 hookrunner
+      # darglint does not recurse into directories — pass files explicitly.
+      - run: git ls-files 'hookrunner/*.py' | xargs darglint -v 2
 
   test:
     name: tests py${{ matrix.python }}

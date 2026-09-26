@@ -1,0 +1,34 @@
+# hookrunner config — copy to webhooks.toml and fill in your secrets.
+#
+# webhooks.toml holds secrets and is gitignored. One secret per scheme.
+# Built-in schemes (stripe, github, optimo) need only a `secret`; their header,
+# algorithm, signed-payload layout, encoding, and prefix are fixed internally.
+
+# Stripe — verifies the `Stripe-Signature` header (t=<unix>,v1=<hex>).
+[stripe]
+secret = "whsec_your_stripe_signing_secret"
+
+# GitHub — verifies the `X-Hub-Signature-256` header (sha256=<hex> over the body).
+[github]
+secret = "your_github_webhook_secret"
+
+# Generic HMAC+nonce (Optimo-style) — signs "{timestamp}.{nonce}.{body}".
+[optimo]
+secret = "your_optimo_secret"
+
+# Custom scheme — one [custom.<name>] table per partner. The <name> becomes the
+# scheme id. Full template so any HMAC layout can be verified and replayed.
+#
+#   header         signature header to read/write
+#   algo           sha256 | sha1
+#   signed_payload template of the bytes to sign; placeholders {body} {timestamp} {nonce}
+#   encoding       hex | base64  (how the digest is encoded in the header)
+#   prefix         string prepended to the encoded digest (e.g. "sha256=")
+#   secret         shared secret
+[custom.partnerx]
+header = "X-Partner-Signature"
+algo = "sha256"
+signed_payload = "{timestamp}.{body}"
+encoding = "hex"
+prefix = "sha256="
+secret = "your_partnerx_secret"

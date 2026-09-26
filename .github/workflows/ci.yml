@@ -76,9 +76,9 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: pip
       - run: pip install -e ".[dev]"
-      # Coverage gate stays off until the signature-verification code lands;
-      # raise to the 80% DoD target once hookrunner/schemes.py exists.
       - run: pytest -q
+      # DoD gate: 80%+ on the signature-verification code paths.
+      - run: coverage report --include='hookrunner/schemes.py' --fail-under=80
 
   deps-drift:
     name: requirements in sync

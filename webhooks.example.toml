@@ -21,14 +21,17 @@ secret = "your_optimo_secret"
 #
 #   header         signature header to read/write
 #   algo           sha256 | sha1
-#   signed_payload template of the bytes to sign; placeholders {body} {timestamp} {nonce}
-#   encoding       hex | base64  (how the digest is encoded in the header)
-#   prefix         string prepended to the encoded digest (e.g. "sha256=")
-#   secret         shared secret
+#   signed_payload   template of the bytes to sign; placeholders {body} {timestamp} {nonce}
+#   encoding         hex | base64  (how the digest is encoded in the header)
+#   prefix           string prepended to the encoded digest (e.g. "sha256=")
+#   timestamp_header request header carrying {timestamp} (required if template uses it)
+#   nonce_header     request header carrying {nonce} (required if template uses it)
+#   secret           shared secret
 [custom.partnerx]
 header = "X-Partner-Signature"
 algo = "sha256"
 signed_payload = "{timestamp}.{body}"
 encoding = "hex"
 prefix = "sha256="
+timestamp_header = "X-Partner-Timestamp"
 secret = "your_partnerx_secret"

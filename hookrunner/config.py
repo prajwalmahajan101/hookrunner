@@ -36,6 +36,10 @@ class SchemeConfig:
             ``{timestamp}``, ``{nonce}``.
         encoding: Digest encoding, one of :data:`ENCODINGS`.
         prefix: String prepended to the encoded digest in the header value.
+        timestamp_header: Request header carrying the value for the
+            ``{timestamp}`` placeholder (custom schemes only).
+        nonce_header: Request header carrying the value for the ``{nonce}``
+            placeholder (custom schemes only).
     """
 
     name: str
@@ -46,6 +50,8 @@ class SchemeConfig:
     signed_payload: str = "{body}"
     encoding: str = "hex"
     prefix: str = ""
+    timestamp_header: str | None = None
+    nonce_header: str | None = None
 
 
 def load_config(path: str | Path) -> dict[str, SchemeConfig]:
@@ -139,8 +145,9 @@ def _build_custom(name: str, d: dict[str, object]) -> SchemeConfig:
         The resolved scheme configuration.
 
     Raises:
-        ConfigError: If a required field is missing, or ``algo``/``encoding`` is
-            not one of the supported values.
+        ConfigError: If a required field is missing, ``algo``/``encoding`` is not
+            supported, or the template uses ``{timestamp}``/``{nonce}`` without the
+            matching source header configured.
     """
     header = _require_str(name, d, "header")
     secret = _require_str(name, d, "secret")
@@ -148,6 +155,8 @@ def _build_custom(name: str, d: dict[str, object]) -> SchemeConfig:
     algo = d.get("algo", "sha256")
     encoding = d.get("encoding", "hex")
     prefix = d.get("prefix", "")
+    timestamp_header = d.get("timestamp_header")
+    nonce_header = d.get("nonce_header")
 
     for field, value, allowed in (
         ("algo", algo, ALGOS),
@@ -157,9 +166,23 @@ def _build_custom(name: str, d: dict[str, object]) -> SchemeConfig:
             raise ConfigError(
                 f"[custom.{name}] {field}='{value}' invalid; expected one of {sorted(allowed)}"
             )
-    for field, value in (("signed_payload", signed_payload), ("prefix", prefix)):
-        if not isinstance(value, str):
+    for field, value in (
+        ("signed_payload", signed_payload),
+        ("prefix", prefix),
+        ("timestamp_header", timestamp_header),
+        ("nonce_header", nonce_header),
+    ):
+        if value is not None and not isinstance(value, str):
             raise ConfigError(f"[custom.{name}] {field} must be a string")
+
+    if "{timestamp}" in str(signed_payload) and not timestamp_header:
+        raise ConfigError(
+            f"[custom.{name}] signed_payload uses {{timestamp}} but no 'timestamp_header' is set"
+        )
+    if "{nonce}" in str(signed_payload) and not nonce_header:
+        raise ConfigError(
+            f"[custom.{name}] signed_payload uses {{nonce}} but no 'nonce_header' is set"
+        )
 
     return SchemeConfig(
         name=name,
@@ -170,6 +193,8 @@ def _build_custom(name: str, d: dict[str, object]) -> SchemeConfig:
         signed_payload=str(signed_payload),
         encoding=str(encoding),
         prefix=str(prefix),
+        timestamp_header=timestamp_header if isinstance(timestamp_header, str) else None,
+        nonce_header=nonce_header if isinstance(nonce_header, str) else None,
     )
 
 

@@ -1,0 +1,9 @@
+# Production dependencies.
+#
+# Kept in sync with pyproject.toml [project.dependencies] (the packaging source
+# of truth). Edit both, then regenerate the lockfile:
+#     pip-compile requirements/base.in
+
+typer
+httpx
+rich

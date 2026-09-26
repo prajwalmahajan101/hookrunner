@@ -62,7 +62,7 @@ a candidate atomic commit. Check off as completed.
 
 - [ ] Load hook, resolve scheme, recompute signature with fresh timestamp. (FR-16)
 - [ ] Swap old signature header(s) for new; POST via `httpx`. (FR-14, FR-15)
-- [ ] Print target response. 
+- [ ] Print target response.
 - [ ] Test: replay a captured hook to a local test receiver; assert it verifies.
 
 ## 8. Packaging & docs
